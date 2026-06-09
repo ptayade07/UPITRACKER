@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload SMS</title>
+</head>
+<body>
+    <h2>Paste your UPI SMS</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %}">
+                {{ message }}
+            </p>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <textarea name="sms_text" rows="5" cols="60" placeholder="Paste your UPI SMS here..."></textarea>
+        <br><br>
+        <button type="submit">Parse & Save</button>
+    </form>
+</body>
+</html>
