@@ -35,3 +35,70 @@ def upload_sms(request):
             return redirect('upload_sms')
 
     return render(request, 'parsers/upload_sms.html')
+
+import xml.etree.ElementTree as ET
+from django.utils.timezone import make_aware
+import datetime
+
+def parse_date_from_ms(ms_timestamp):
+    try:
+        return make_aware(datetime.datetime.fromtimestamp(int(ms_timestamp) / 1000))
+    except:
+        return make_aware(datetime.datetime.now())
+
+@login_required
+def upload_xml(request):
+    if request.method == 'POST' and request.FILES.get('sms_file'):
+        sms_file = request.FILES['sms_file']
+        
+        try:
+            tree = ET.parse(sms_file)
+            root = tree.getroot()
+        except ET.ParseError:
+            messages.error(request, 'Invalid XML file. Please upload a valid SMS Backup file.')
+            return render(request, 'parsers/upload_xml.html')
+
+        saved = 0
+        skipped = 0
+
+        for sms in root.findall('sms'):
+            body = sms.get('body', '')
+            date_ms = sms.get('date', '')
+
+            # Only process UPI related SMS
+            if not any(keyword in body.lower() for keyword in ['upi', 'debited', 'credited', 'rs.', 'inr']):
+                skipped += 1
+                continue
+
+            parsed = parse_upi_sms(body)
+
+            if 'amount' not in parsed or 'transaction_type' not in parsed:
+                skipped += 1
+                continue
+
+            # Skip duplicate UPI refs
+            upi_ref = parsed.get('upi_ref', '')
+            if upi_ref and Transaction.objects.filter(user=request.user, upi_ref=upi_ref).exists():
+                skipped += 1
+                continue
+
+            date = parse_date_from_ms(date_ms) if date_ms else parsed.get('date', make_aware(datetime.datetime.now()))
+            if isinstance(date, datetime.datetime) and not date.tzinfo:
+                date = make_aware(date)
+
+            Transaction.objects.create(
+                user=request.user,
+                amount=parsed.get('amount'),
+                transaction_type=parsed.get('transaction_type'),
+                payment_app=parsed.get('payment_app', 'bank'),
+                merchant=parsed.get('merchant', ''),
+                upi_ref=upi_ref,
+                raw_sms=body,
+                date=date,
+            )
+            saved += 1
+
+        messages.success(request, f'Done! {saved} transactions imported, {skipped} skipped.')
+        return redirect('upload_xml')
+
+    return render(request, 'parsers/upload_xml.html')
