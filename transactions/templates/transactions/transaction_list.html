@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Transactions</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        h2 { color: #333; }
+        .filters { margin-bottom: 20px; display: flex; gap: 12px; }
+        select { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; }
+        button { padding: 8px 16px; background: #4a90e2; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f5f5f5; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #fafafa; }
+        .debit { color: #e74c3c; font-weight: bold; }
+        .credit { color: #27ae60; font-weight: bold; }
+        .badge { padding: 3px 8px; border-radius: 12px; font-size: 12px; }
+        .gpay { background: #e8f4fd; color: #1a73e8; }
+        .phonepe { background: #f0e6ff; color: #5f259f; }
+        .paytm { background: #e6f7ff; color: #00b9f1; }
+        .bank { background: #f0f0f0; color: #666; }
+        .nav { margin-bottom: 20px; display: flex; gap: 16px; }
+        .nav a { text-decoration: none; color: #4a90e2; }
+        .empty { text-align: center; padding: 40px; color: #999; }
+    </style>
+</head>
+<body>
+
+    <div class="nav">
+        <a href="/transactions/">My Transactions</a>
+        <a href="/parsers/upload/">+ Add SMS</a>
+        <a href="/parsers/upload-xml/">+ Bulk Upload</a>
+    </div>
+
+    <h2>My Transactions</h2>
+
+    <form method="GET" class="filters">
+        <select name="payment_app">
+            <option value="">All Apps</option>
+            <option value="gpay" {% if payment_app == 'gpay' %}selected{% endif %}>GPay</option>
+            <option value="phonepe" {% if payment_app == 'phonepe' %}selected{% endif %}>PhonePe</option>
+            <option value="paytm" {% if payment_app == 'paytm' %}selected{% endif %}>Paytm</option>
+            <option value="bank" {% if payment_app == 'bank' %}selected{% endif %}>Bank</option>
+        </select>
+        <select name="transaction_type">
+            <option value="">All Types</option>
+            <option value="debit" {% if transaction_type == 'debit' %}selected{% endif %}>Debit</option>
+            <option value="credit" {% if transaction_type == 'credit' %}selected{% endif %}>Credit</option>
+        </select>
+        <button type="submit">Filter</button>
+    </form>
+
+    {% if transactions %}
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Type</th>
+                <th>App</th>
+                <th>Merchant</th>
+                <th>UPI Ref</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for txn in transactions %}
+            <tr>
+                <td>{{ txn.date|date:"d M Y" }}</td>
+                <td>₹{{ txn.amount }}</td>
+                <td class="{{ txn.transaction_type }}">
+                    {% if txn.transaction_type == 'debit' %}↑ Debit{% else %}↓ Credit{% endif %}
+                </td>
+                <td><span class="badge {{ txn.payment_app }}">{{ txn.get_payment_app_display }}</span></td>
+                <td>{{ txn.merchant|default:"—" }}</td>
+                <td style="font-size:12px; color:#999;">{{ txn.upi_ref|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">
+        <p>No transactions yet.</p>
+        <a href="/parsers/upload/">Add your first SMS</a>
+    </div>
+    {% endif %}
+
+</body>
+</html>
