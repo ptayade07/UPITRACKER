@@ -48,7 +48,8 @@ INSTALLED_APPS = [
 
     # our apps
     'accounts', 
-    'transactions',   # ← add this  
+    'transactions',
+    'parsers',   # ← add this  
 ]
 
 MIDDLEWARE = [
