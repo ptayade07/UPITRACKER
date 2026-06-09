@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f4f6f9; color: #333; }
+        .nav { background: white; padding: 16px 32px; display: flex; gap: 24px; border-bottom: 1px solid #eee; }
+        .nav a { text-decoration: none; color: #4a90e2; font-size: 15px; }
+        .nav a.active { color: #333; font-weight: bold; }
+        .container { max-width: 1000px; margin: 32px auto; padding: 0 20px; }
+        h2 { margin-bottom: 24px; font-size: 22px; color: #222; }
+
+        /* Stat cards */
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+        .stat-card { background: white; border-radius: 12px; padding: 24px; border: 1px solid #eee; }
+        .stat-card .label { font-size: 13px; color: #999; margin-bottom: 8px; }
+        .stat-card .value { font-size: 28px; font-weight: bold; color: #222; }
+        .stat-card .sub { font-size: 12px; color: #aaa; margin-top: 4px; }
+        .up { color: #e74c3c !important; }
+        .down { color: #27ae60 !important; }
+
+        /* Charts grid */
+        .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px; }
+        .chart-card { background: white; border-radius: 12px; padding: 24px; border: 1px solid #eee; }
+        .chart-card h3 { font-size: 15px; color: #555; margin-bottom: 16px; }
+        .chart-card.full { grid-column: span 2; }
+
+        /* Top merchants */
+        .merchants { background: white; border-radius: 12px; padding: 24px; border: 1px solid #eee; }
+        .merchants h3 { font-size: 15px; color: #555; margin-bottom: 16px; }
+        .merchant-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+        .merchant-row:last-child { border-bottom: none; }
+        .merchant-name { font-size: 14px; text-transform: capitalize; }
+        .merchant-amount { font-size: 14px; font-weight: bold; color: #e74c3c; }
+        .bar-bg { background: #f0f0f0; border-radius: 4px; height: 6px; flex: 1; margin: 0 16px; }
+        .bar-fill { background: #4a90e2; border-radius: 4px; height: 6px; }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <a href="/transactions/dashboard/" class="active">Dashboard</a>
+    <a href="/transactions/">Transactions</a>
+    <a href="/parsers/upload/">+ Add SMS</a>
+    <a href="/parsers/upload-xml/">+ Bulk Upload</a>
+</div>
+
+<div class="container">
+    <h2>Your Spending Overview</h2>
+
+    <!-- Stat Cards -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="label">Spent this month</div>
+            <div class="value">₹{{ this_month_total|floatformat:0 }}</div>
+            <div class="sub">Current month</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Spent last month</div>
+            <div class="value">₹{{ last_month_total|floatformat:0 }}</div>
+            <div class="sub">Previous month</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Total transactions</div>
+            <div class="value">{{ total_transactions }}</div>
+            <div class="sub">All time</div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts">
+        <div class="chart-card">
+            <h3>Spending by payment app</h3>
+            <canvas id="appChart" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Top merchants</h3>
+            {% for m in top_merchants %}
+            {% with top_merchants.0.total as max_val %}
+            <div class="merchant-row">
+                <span class="merchant-name">{{ m.merchant|truncatechars:20 }}</span>
+                <div class="bar-bg">
+                    <div class="bar-fill" style="width: {% widthratio m.total max_val 100 %}%"></div>
+                </div>
+                <span class="merchant-amount">₹{{ m.total|floatformat:0 }}</span>
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+        <div class="chart-card full">
+            <h3>Monthly spending trend</h3>
+            <canvas id="monthlyChart" height="100"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Payment app doughnut chart
+    new Chart(document.getElementById('appChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ app_labels|safe }},
+            datasets: [{
+                data: {{ app_data|safe }},
+                backgroundColor: ['#4a90e2', '#7b68ee', '#00b9f1', '#95a5a6'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            plugins: { legend: { position: 'bottom' } },
+            cutout: '65%'
+        }
+    });
+
+    // Monthly trend bar chart
+    new Chart(document.getElementById('monthlyChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ monthly_labels|safe }},
+            datasets: [{
+                label: 'Total Spent (₹)',
+                data: {{ monthly_data|safe }},
+                backgroundColor: '#4a90e2',
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: val => '₹' + val.toLocaleString('en-IN')
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
