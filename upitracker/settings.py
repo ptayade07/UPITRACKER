@@ -49,7 +49,10 @@ INSTALLED_APPS = [
     # our apps
     'accounts', 
     'transactions',
-    'parsers',   # ← add this  
+    'parsers', 
+    'rest_framework',
+    'rest_framework_simplejwt', 
+     'api', # ← add this  
 ]
 
 MIDDLEWARE = [
@@ -146,3 +149,12 @@ LOGIN_REDIRECT_URL = '/'
 ACCOUNT_EMAIL_VERIFICATION = 'none'   # keep it simple for now
 
 AUTH_USER_MODEL = 'accounts.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
