@@ -61,6 +61,7 @@ class ParseSMSView(APIView):
             upi_ref=parsed.get('upi_ref', ''),
             raw_sms=parsed.get('raw_sms', ''),
             date=date,
+            category=parsed.get('category', ''),
         )
         serializer = TransactionSerializer(transaction)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

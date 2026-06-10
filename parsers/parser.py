@@ -48,4 +48,27 @@ def parse_upi_sms(sms_text):
                 continue
 
     result['raw_sms'] = sms_text
+
+    result['category'] = detect_category(
+        result.get('merchant', ''), 
+        sms_text
+    )
+
     return result
+
+CATEGORY_RULES = {
+    'Food': ['swiggy', 'zomato', 'blinkit', 'zepto', 'dominos', 'mcdonalds', 'kfc', 'subway', 'dunzo', 'bigbasket', 'grofers'],
+    'Transport': ['uber', 'ola', 'rapido', 'irctc', 'redbus', 'metro', 'petrol', 'fuel'],
+    'Entertainment': ['netflix', 'spotify', 'prime', 'hotstar', 'youtube', 'bookmyshow', 'pvr', 'inox'],
+    'Shopping': ['amazon', 'flipkart', 'myntra', 'nykaa', 'ajio', 'meesho', 'snapdeal'],
+    'Bills': ['airtel', 'jio', 'vodafone', 'bsnl', 'electricity', 'bescom', 'mahadiscom', 'tata'],
+    'Health': ['pharmacy', 'medplus', 'apollo', 'practo', 'netmeds', '1mg', 'hospital'],
+    'Education': ['udemy', 'coursera', 'byju', 'unacademy', 'college', 'school', 'fees'],
+}
+
+def detect_category(merchant, raw_sms=''):
+    text = (merchant + ' ' + raw_sms).lower()
+    for category, keywords in CATEGORY_RULES.items():
+        if any(keyword in text for keyword in keywords):
+            return category
+    return ''

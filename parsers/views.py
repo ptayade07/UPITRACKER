@@ -30,6 +30,7 @@ def upload_sms(request):
                 upi_ref=parsed.get('upi_ref', ''),
                 raw_sms=parsed.get('raw_sms', ''),
                 date=date,
+                category=parsed.get('category', ''),
             )
             messages.success(request, f"Transaction of ₹{parsed['amount']} saved successfully!")
             return redirect('upload_sms')
@@ -95,6 +96,7 @@ def upload_xml(request):
                 upi_ref=upi_ref,
                 raw_sms=body,
                 date=date,
+                category=parsed.get('category', ''),
             )
             saved += 1
 
