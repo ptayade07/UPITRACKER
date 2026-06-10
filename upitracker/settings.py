@@ -175,4 +175,4 @@ if os.environ.get('DATABASE_URL'):
 if not config('DEBUG', default=False, cast=bool):
     ALLOWED_HOSTS = ['*']
 
-    
+    CSRF_TRUSTED_ORIGINS = [os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000')]

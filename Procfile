@@ -1,0 +1,1 @@
+web: gunicorn upitracker.wsgi --log-file -
