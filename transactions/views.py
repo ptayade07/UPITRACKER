@@ -49,6 +49,16 @@ def dashboard(request):
     app_labels = [item['payment_app'].upper() for item in by_app]
     app_data = [float(item['total']) for item in by_app]
 
+    # Spending by category
+    by_category = (
+    all_debits.exclude(category='')
+    .values('category')
+    .annotate(total=Sum('amount'))
+    .order_by('-total')
+)
+    category_labels = [item['category'] for item in by_category]
+    category_data = [float(item['total']) for item in by_category]
+
     # Top 5 merchants
     top_merchants = (
         all_debits.exclude(merchant='')
@@ -78,5 +88,7 @@ def dashboard(request):
         'top_merchants': top_merchants,
         'monthly_labels': json.dumps(monthly_labels),
         'monthly_data': json.dumps(monthly_data),
+        'category_labels': json.dumps(category_labels),
+        'category_data': json.dumps(category_data),
     }
     return render(request, 'transactions/dashboard.html', context)

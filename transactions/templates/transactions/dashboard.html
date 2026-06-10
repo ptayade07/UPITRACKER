@@ -70,29 +70,32 @@
     </div>
 
     <!-- Charts -->
-    <div class="charts">
-        <div class="chart-card">
-            <h3>Spending by payment app</h3>
-            <canvas id="appChart" height="200"></canvas>
-        </div>
-        <div class="chart-card">
-            <h3>Top merchants</h3>
-            {% for m in top_merchants %}
-            {% with top_merchants.0.total as max_val %}
-            <div class="merchant-row">
-                <span class="merchant-name">{{ m.merchant|truncatechars:20 }}</span>
-                <div class="bar-bg">
-                    <div class="bar-fill" style="width: {% widthratio m.total max_val 100 %}%"></div>
-                </div>
-                <span class="merchant-amount">₹{{ m.total|floatformat:0 }}</span>
+<div class="charts">
+    <div class="chart-card">
+        <h3>Spending by payment app</h3>
+        <canvas id="appChart" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3>Spending by category</h3>
+        <canvas id="categoryChart" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3>Top merchants</h3>
+        {% for m in top_merchants %}
+        {% with top_merchants.0.total as max_val %}
+        <div class="merchant-row">
+            <span class="merchant-name">{{ m.merchant|truncatechars:20 }}</span>
+            <div class="bar-bg">
+                <div class="bar-fill" style="width: {% widthratio m.total max_val 100 %}%"></div>
             </div>
-            {% endwith %}
-            {% endfor %}
+            <span class="merchant-amount">₹{{ m.total|floatformat:0 }}</span>
         </div>
-        <div class="chart-card full">
-            <h3>Monthly spending trend</h3>
-            <canvas id="monthlyChart" height="100"></canvas>
-        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+    <div class="chart-card full">
+        <h3>Monthly spending trend</h3>
+        <canvas id="monthlyChart" height="100"></canvas>
     </div>
 </div>
 
@@ -139,6 +142,24 @@
             }
         }
     });
+
+    new Chart(document.getElementById('categoryChart'), {
+    type: 'doughnut',
+    data: {
+        labels: {{ category_labels|safe }},
+        datasets: [{
+            data: {{ category_data|safe }},
+            backgroundColor: ['#e74c3c', '#f39c12', '#9b59b6', '#1abc9c', '#3498db'],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        plugins: { legend: { position: 'bottom' } },
+        cutout: '65%'
+    }
+});
+
 </script>
 
 </body>
