@@ -66,7 +66,8 @@ MIDDLEWARE = [
     
     'django.contrib.sessions.middleware.SessionMiddleware',
     'allauth.account.middleware.AccountMiddleware',   # add this
-    
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ← add this
+
 
 ]
     
@@ -158,3 +159,20 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
+import dj_database_url
+import os
+
+# Static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Production database
+if os.environ.get('DATABASE_URL'):
+    DATABASES['default'] = dj_database_url.parse(os.environ.get('DATABASE_URL'))
+
+# Production settings
+if not config('DEBUG', default=False, cast=bool):
+    ALLOWED_HOSTS = ['*']
+
+    
