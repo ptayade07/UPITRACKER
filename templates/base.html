@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" x-bind:class="{ 'dark': darkMode }" x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}UPI Tracker{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        accent: { light: '#6366F1', dark: '#818CF8' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 font-sans transition-colors duration-200">
+
+<div class="flex h-full">
+
+    <!-- Sidebar -->
+    <aside class="fixed inset-y-0 left-0 w-56 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 flex flex-col z-10">
+        
+        <!-- Logo -->
+        <div class="px-6 py-5 border-b border-gray-200 dark:border-slate-700">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 bg-indigo-500 rounded-lg flex items-center justify-center">
+                    <span class="text-white text-xs font-bold">₹</span>
+                </div>
+                <span class="font-semibold text-gray-900 dark:text-white tracking-tight">UPI Tracker</span>
+            </div>
+        </div>
+
+        <!-- Nav links -->
+        <nav class="flex-1 px-3 py-4 space-y-1">
+            <a href="/transactions/dashboard/" 
+               class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+               {% block nav_dashboard %}text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700{% endblock %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Dashboard
+            </a>
+            <a href="/transactions/" 
+               class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+               {% block nav_transactions %}text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700{% endblock %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Transactions
+            </a>
+            <a href="/parsers/upload/" 
+               class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+               {% block nav_upload %}text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700{% endblock %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add SMS
+            </a>
+            <a href="/parsers/upload-xml/" 
+               class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+               {% block nav_bulk %}text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700{% endblock %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                Bulk Upload
+            </a>
+        </nav>
+
+        <!-- Bottom: dark mode + user -->
+        <div class="px-3 py-4 border-t border-gray-200 dark:border-slate-700 space-y-1">
+            <!-- Dark mode toggle -->
+            <button @click="darkMode = !darkMode"
+                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+                <svg x-show="!darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+                <svg x-show="darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                <span x-text="darkMode ? 'Light mode' : 'Dark mode'"></span>
+            </button>
+            <!-- Logout -->
+            <a href="/accounts/logout/"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="ml-56 flex-1 min-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+</body>
+</html>

@@ -1,58 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Bulk Upload SMS</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 60px auto; padding: 0 20px; }
-        h2 { color: #333; }
-        .nav { margin-bottom: 24px; display: flex; gap: 16px; }
-        .nav a { text-decoration: none; color: #4a90e2; }
-        .upload-box { border: 2px dashed #ccc; border-radius: 12px; padding: 40px; text-align: center; }
-        .upload-box input { margin: 20px 0; }
-        button { padding: 10px 24px; background: #4a90e2; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }
-        .msg-success { color: #27ae60; background: #eafaf1; padding: 12px; border-radius: 6px; margin-bottom: 16px; }
-        .msg-error { color: #e74c3c; background: #fdf0ef; padding: 12px; border-radius: 6px; margin-bottom: 16px; }
-        .instructions { margin-top: 32px; background: #f9f9f9; padding: 20px; border-radius: 8px; font-size: 14px; color: #555; }
-        .instructions ol { padding-left: 20px; line-height: 2; }
-    </style>
+    <title>Upload SMS</title>
 </head>
 <body>
-
-    <div class="nav">
-        <a href="/transactions/">My Transactions</a>
-        <a href="/parsers/upload/">+ Add SMS</a>
-        <a href="/parsers/upload-xml/">+ Bulk Upload</a>
-    </div>
-
-    <h2>Bulk Upload SMS Backup</h2>
+    <h2>Paste your UPI SMS</h2>
 
     {% if messages %}
         {% for message in messages %}
-            <div class="{% if message.tags == 'error' %}msg-error{% else %}msg-success{% endif %}">
+            <p style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %}">
                 {{ message }}
-            </div>
+            </p>
         {% endfor %}
     {% endif %}
 
-    <div class="upload-box">
-        <p>Upload your SMS Backup XML file to import all UPI transactions at once.</p>
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="file" name="sms_file" accept=".xml" required>
-            <br>
-            <button type="submit">Import Transactions</button>
-        </form>
-    </div>
-
-    <div class="instructions">
-        <strong>How to export your SMS on Android:</strong>
-        <ol>
-            <li>Install <strong>SMS Backup & Restore</strong> from Play Store</li>
-            <li>Open the app and tap <strong>Back Up Now</strong></li>
-            <li>Transfer the XML file to your computer</li>
-            <li>Upload it here</li>
-        </ol>
-    </div>
-
+    <form method="POST">
+        {% csrf_token %}
+        <textarea name="sms_text" rows="5" cols="60" placeholder="Paste your UPI SMS here..."></textarea>
+        <br><br>
+        <button type="submit">Parse & Save</button>
+    </form>
 </body>
 </html>
